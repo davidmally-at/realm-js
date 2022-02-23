@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, { useCallback, useMemo } from "react";
-import { SafeAreaView, View, StyleSheet, Button } from "react-native";
+import { SafeAreaView, View, StyleSheet, Button, Text } from "react-native";
 
 import TaskContext, { Task } from "./app/models/Task";
 import IntroText from "./app/components/IntroText";
@@ -27,13 +27,25 @@ import colors from "./app/styles/colors";
 
 const { useRealm, useQuery } = TaskContext;
 
-interface AppMainProps {
+type AppPropsBase = {
+  syncEnabled: boolean;
+};
+
+type AppPropsSyncDisabled = AppPropsBase & {
+  syncEnabled: false;
+};
+
+type AppPropsSyncEnabled = AppPropsBase & {
+  syncEnabled: true;
   onLogin?: () => void;
   onLogout?: () => void;
   currentUserId: string;
-}
+  currentUserName: string;
+};
 
-export function App(props: AppMainProps) {
+type AppProps = AppPropsSyncDisabled | AppPropsSyncEnabled;
+
+export function App(props: AppProps) {
   const realm = useRealm();
   const result = useQuery(Task);
 
@@ -53,7 +65,7 @@ export function App(props: AppMainProps) {
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        realm.create("Task", Task.generate("props.currentUserId", description));
+        realm.create("Task", Task.generate(props.syncEnabled ? props.currentUserId : undefined, description));
       });
     },
     [realm],
@@ -105,8 +117,14 @@ export function App(props: AppMainProps) {
           <TaskList tasks={tasks} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
         )}
       </View>
-      {props.onLogin && <Button title="Login" onPress={props.onLogin} />}
-      {props.onLogout && <Button title="Logout" onPress={props.onLogout} />}
+
+      {props.syncEnabled && (
+        <>
+          {props.onLogin && <Button title="Login" onPress={props.onLogin} />}
+          {props.onLogout && <Button title="Logout" onPress={props.onLogout} />}
+          {props.currentUserName && <Text style={styles.username}>Logged in as {props.currentUserName}</Text>}
+        </>
+      )}
     </SafeAreaView>
   );
 }
@@ -120,5 +138,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 20,
     paddingHorizontal: 20,
+  },
+  username: {
+    color: colors.gray,
+    textAlign: "center",
   },
 });

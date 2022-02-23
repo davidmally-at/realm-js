@@ -17,12 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TextInput, Button } from "react-native";
+import { AuthState } from "../../AppWrapper";
 import colors from "../styles/colors";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => void;
   onRegister: (email: string, password: string) => void;
-  loginError: boolean;
+  authState: AuthState;
 }
 
 export default function LoginScreen(props: LoginScreenProps) {
@@ -55,10 +56,21 @@ export default function LoginScreen(props: LoginScreenProps) {
         />
       </View>
 
-      {props.loginError && <Text style={styles.error}>There was an error logging in, please try again</Text>}
+      {props.authState === AuthState.LoginError && (
+        <Text style={[styles.status, styles.error]}>There was an error logging in, please try again</Text>
+      )}
+      {props.authState === AuthState.RegisterError && (
+        <Text style={[styles.status, styles.error]}>There was an error registering, please try again</Text>
+      )}
 
-      <Button title="Login" onPress={() => props.onLogin(email, password)} />
-      <Button title="Register" onPress={() => props.onRegister(email, password)} />
+      {props.authState === AuthState.Loading ? (
+        <Text>Please wait...</Text>
+      ) : (
+        <>
+          <Button title="Login" onPress={() => props.onLogin(email, password)} />
+          <Button title="Register" onPress={() => props.onRegister(email, password)} />
+        </>
+      )}
     </View>
   );
 }
@@ -76,7 +88,9 @@ const styles = StyleSheet.create({
 
   label: { textAlign: "center", marginBottom: 10 },
 
-  error: { textAlign: "center", margin: 10, color: "#f00" },
+  status: { textAlign: "center", margin: 10 },
+
+  error: { color: "#f00" },
 
   input: { borderWidth: 1, borderColor: colors.gray, padding: 10, width: 250 },
 });

@@ -16,47 +16,61 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// 1. Create AppWrapper.tsx which is the entry point into your app, and is
-// responsible for logging in the user and setting up sync on the Realm.
-
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Realm } from "@realm/react";
 
 import TaskContext from "./app/models/Task";
 import { App } from "./App";
 import LoginScreen from "./app/components/LoginScreen";
+import { SYNC_CONFIG } from "./app/config/sync";
 
-// 2. Add your Realm app ID here and create the Realm app
-const APP_ID = "application-0-bzsvu";
-const app = new Realm.App({ id: APP_ID });
-Realm.App.Sync.setLogLevel(app, "all");
+export enum AuthState {
+  None,
+  Loading,
+  LoginError,
+  RegisterError,
+}
 
 export default function AppWrapper() {
-  // 3. Store the logged in user in state so that we know when to render the login screen and
+  const { RealmProvider } = TaskContext;
+
+  // If sync is disabled, create the app without any sync functionality
+  if (!SYNC_CONFIG.enabled) {
+    return (
+      <RealmProvider>
+        <App syncEnabled={false} />
+      </RealmProvider>
+    );
+  }
+
+  // Set up the Realm app
+  const app = useRef(new Realm.App({ id: SYNC_CONFIG.realmAppId })).current;
+
+  // Store the logged in user in state so that we know when to render the login screen and
   // when to render the app. This will be null the first time you start the app, but on future
   // startups, the logged in user will persist.
   const [user, setUser] = useState<Realm.User | null>(app.currentUser);
 
-  const [loginError, setLoginError] = useState(false);
-  const [loginVisible, setLoginVisible] = useState(false);
-
-  const { RealmProvider } = TaskContext;
+  const [authState, setAuthState] = useState(AuthState.None);
+  const [authVisible, setAuthVisible] = useState(false);
 
   const handleLogin = async (email: string, password: string) => {
-    setLoginError(false);
+    setAuthState(AuthState.Loading);
+
     const credentials = Realm.Credentials.emailPassword(email, password);
 
     try {
       setUser(await app.logIn(credentials));
-      setLoginVisible(false);
+      setAuthVisible(false);
+      setAuthState(AuthState.None);
     } catch (e) {
-      console.log(e);
-      setLoginError(true);
+      console.log("Error logging in", e);
+      setAuthState(AuthState.LoginError);
     }
   };
 
   const handleRegister = async (email: string, password: string) => {
-    setLoginError(false);
+    setAuthState(AuthState.Loading);
 
     try {
       // Register the user...
@@ -64,15 +78,12 @@ export default function AppWrapper() {
       // ...then login with the newly created user
       const credentials = Realm.Credentials.emailPassword(email, password);
       setUser(await app.logIn(credentials));
-      setLoginVisible(false);
+      setAuthVisible(false);
+      setAuthState(AuthState.None);
     } catch (e) {
-      console.log(e);
-      setLoginError(true);
+      console.log("Error registering", e);
+      setAuthState(AuthState.RegisterError);
     }
-  };
-
-  const handleShowLogin = () => {
-    setLoginVisible(true);
   };
 
   const handleLogout = () => {
@@ -80,22 +91,43 @@ export default function AppWrapper() {
     app.currentUser?.logOut();
   };
 
-  if (loginVisible) {
-    return <LoginScreen onLogin={handleLogin} onRegister={handleRegister} loginError={loginError} />;
+  const handleShowAuth = () => {
+    setAuthVisible(true);
+  };
+
+  useEffect(() => {
+    if (user || !SYNC_CONFIG.anonymousAuthEnabled) return;
+
+    (async () => {
+      const credentials = Realm.Credentials.anonymous();
+      try {
+        setUser(await app.logIn(credentials));
+      } catch (e) {
+        console.log("Error logging in anonymous user", e);
+        throw e;
+      }
+    })();
+  }, [user]);
+
+  // Return null while we wait for anonymous login to complete
+  if (!user && SYNC_CONFIG.anonymousAuthEnabled) return null;
+
+  // If we are not logged in, or the user has pressed "Login" as an anonymous user,
+  // show the login screen
+  if (authVisible || !user || !app.currentUser) {
+    return <LoginScreen onLogin={handleLogin} onRegister={handleRegister} authState={authState} />;
   }
 
-  if (!user || !app.currentUser) {
-    return (
-      <RealmProvider>
-        <App onLogin={handleShowLogin} currentUserId="" />
-      </RealmProvider>
-    );
-  }
-
-  // 7. If we are logged in, add the sync configuration the the Realm and render the ap
+  // If we are logged in, add the sync configuration the the Realm and render the app
   return (
     <RealmProvider sync={{ user, partitionValue: app.currentUser.id }}>
-      <App onLogout={handleLogout} currentUserId={app.currentUser.id} />
+      <App
+        syncEnabled={true}
+        onLogin={SYNC_CONFIG.anonymousAuthEnabled && user.providerType === "anon-user" ? handleShowAuth : undefined}
+        onLogout={user.providerType === "anon-user" ? undefined : handleLogout}
+        currentUserId={app.currentUser.id}
+        currentUserName={user.providerType === "anon-user" ? "Anonymous" : app.currentUser.profile.email}
+      />
     </RealmProvider>
   );
 }

@@ -22,13 +22,13 @@ export class Task extends Realm.Object {
   isComplete!: boolean;
   userId!: string;
 
-  static generate(userId: string, description: string) {
+  static generate(userId: string | undefined, description: string) {
     return {
       _id: new Realm.BSON.ObjectId(),
       description,
       isComplete: false,
       createdAt: new Date(),
-      userId,
+      userId: userId || "_SYNC_DISABLED_",
     };
   }
 
