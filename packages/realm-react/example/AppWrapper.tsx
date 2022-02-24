@@ -18,12 +18,12 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Realm } from "@realm/react";
+import { StyleSheet, View } from "react-native";
 
 import TaskContext from "./app/models/Task";
 import { App } from "./App";
 import LoginScreen from "./app/components/LoginScreen";
 import { SYNC_CONFIG } from "./app/config/sync";
-import { StyleSheet, View } from "react-native";
 import colors from "./app/styles/colors";
 
 export enum AuthState {
@@ -36,7 +36,7 @@ export enum AuthState {
 function AppWrapperImpl() {
   const { RealmProvider } = TaskContext;
 
-  // If sync is disabled, setup the app without any sync functionality
+  // If sync is disabled, setup the app without any sync functionality and return early
   if (!SYNC_CONFIG.enabled) {
     return (
       <RealmProvider>
@@ -56,9 +56,15 @@ function AppWrapperImpl() {
   const [authState, setAuthState] = useState(AuthState.None);
   const [authVisible, setAuthVisible] = useState(false);
 
+  // If the user presses "login", show the auth screen
+  const handleShowAuth = () => {
+    setAuthVisible(true);
+  };
+
+  // If the user presses "login" from the auth screen, try to log them in
+  // with the supplied credentials
   const handleLogin = async (email: string, password: string) => {
     setAuthState(AuthState.Loading);
-
     const credentials = Realm.Credentials.emailPassword(email, password);
 
     try {
@@ -71,6 +77,8 @@ function AppWrapperImpl() {
     }
   };
 
+  // If the user presses "register" from the auth screen, try to register a
+  // new account with the  supplied credentials and login as the newly created user
   const handleRegister = async (email: string, password: string) => {
     setAuthState(AuthState.Loading);
 
@@ -79,6 +87,7 @@ function AppWrapperImpl() {
       await app.emailPasswordAuth.registerUser({ email, password });
       // ...then login with the newly created user
       const credentials = Realm.Credentials.emailPassword(email, password);
+
       setUser(await app.logIn(credentials));
       setAuthVisible(false);
       setAuthState(AuthState.None);
@@ -88,15 +97,14 @@ function AppWrapperImpl() {
     }
   };
 
+  // If the user presses "logout", unset the user in state and log the user out
+  // of the Realm app
   const handleLogout = () => {
     setUser(null);
     app.currentUser?.logOut();
   };
 
-  const handleShowAuth = () => {
-    setAuthVisible(true);
-  };
-
+  // If anonymous auth is enabled and no user is logged in, log in as an anonymous user
   useEffect(() => {
     if (user || !SYNC_CONFIG.anonymousAuthEnabled) return;
 
@@ -111,7 +119,7 @@ function AppWrapperImpl() {
     })();
   }, [user]);
 
-  // Return null while we wait for anonymous login to complete
+  // Return null if we are waiting for anonymous login to complete
   if ((!user || !app.currentUser) && SYNC_CONFIG.anonymousAuthEnabled) return null;
 
   // If we are not logged in, or the user has pressed "Login" as an anonymous user,
@@ -120,7 +128,7 @@ function AppWrapperImpl() {
     return <LoginScreen onLogin={handleLogin} onRegister={handleRegister} authState={authState} />;
   }
 
-  // If we are logged in, add the sync configuration the the Realm and render the app
+  // If we are logged in, add the sync configuration the the RealmProvider and render the app
   return (
     <RealmProvider sync={{ user, partitionValue: app.currentUser.id }}>
       <App

@@ -1,8 +1,9 @@
 export const SYNC_CONFIG = {
-  //enabled: false,
-  enabled: true,
-  // realmAppId: "<Your App ID>",
-  realmAppId: "application-0-bzsvu",
-  // anonymousAuthEnabled: false,
+  // Set `enabled` to `true` to enable sync. See `AppWrapper.tsx` for the relevant code.
+  enabled: false,
+  // Add your Realm App ID here if sync is enabled.
+  realmAppId: "<Your App ID>",
+  // Set `anonymousAuthEnabled` to allow anonymous login.
+  // See https://docs.mongodb.com/realm/authentication/anonymous/ for more information.
   anonymousAuthEnabled: false,
 }
