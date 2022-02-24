@@ -25,7 +25,7 @@ import AddTaskForm from "./app/components/AddTaskForm";
 import TaskList from "./app/components/TaskList";
 import colors from "./app/styles/colors";
 import { buttonStyles } from "./app/styles/button";
-import { defaultShadows } from "./app/styles/shadows";
+import { shadows } from "./app/styles/shadows";
 
 const { useRealm, useQuery } = TaskContext;
 
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   authButton: {
     ...buttonStyles.button,
-    ...defaultShadows,
+    ...shadows,
     backgroundColor: colors.purpleDark,
     paddingHorizontal: 0,
     paddingVertical: 0,

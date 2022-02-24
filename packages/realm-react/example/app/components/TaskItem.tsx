@@ -18,7 +18,7 @@
 import React, { memo } from "react";
 import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
 
-import { defaultShadows } from "../styles/shadows";
+import { shadows } from "../styles/shadows";
 import colors from "../styles/colors";
 
 interface TaskItemProps {
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     backgroundColor: colors.white,
     borderRadius: 5,
-    ...defaultShadows,
+    ...shadows,
   },
   descriptionContainer: {
     flex: 1,

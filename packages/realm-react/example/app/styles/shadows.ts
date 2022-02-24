@@ -1,7 +1,7 @@
 import { Platform } from "react-native";
 import colors from "./colors";
 
-export const defaultShadows = Platform.select({
+export const shadows = Platform.select({
   ios: {
     shadowColor: colors.black,
     shadowOffset: {

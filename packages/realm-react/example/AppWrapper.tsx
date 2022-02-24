@@ -36,7 +36,7 @@ export enum AuthState {
 function AppWrapperImpl() {
   const { RealmProvider } = TaskContext;
 
-  // If sync is disabled, create the app without any sync functionality
+  // If sync is disabled, setup the app without any sync functionality
   if (!SYNC_CONFIG.enabled) {
     return (
       <RealmProvider>

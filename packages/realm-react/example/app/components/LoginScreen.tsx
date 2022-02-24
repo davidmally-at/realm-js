@@ -19,7 +19,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TextInput, Button, Pressable } from "react-native";
 import { AuthState } from "../../AppWrapper";
 import colors from "../styles/colors";
-import { defaultShadows } from "../styles/shadows";
+import { shadows } from "../styles/shadows";
 import { buttonStyles } from "../styles/button";
 
 interface LoginScreenProps {
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     backgroundColor: colors.white,
     borderRadius: 5,
-    ...defaultShadows,
+    ...shadows,
   },
 
   buttons: {
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
 
   button: {
     ...buttonStyles.button,
-    ...defaultShadows,
+    ...shadows,
   },
 
   buttonDisabled: {
