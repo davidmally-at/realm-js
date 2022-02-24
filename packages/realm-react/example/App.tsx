@@ -17,13 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, { useCallback, useMemo } from "react";
-import { SafeAreaView, View, StyleSheet, Button, Text } from "react-native";
+import { SafeAreaView, View, StyleSheet, Button, Text, Pressable } from "react-native";
 
 import TaskContext, { Task } from "./app/models/Task";
 import IntroText from "./app/components/IntroText";
 import AddTaskForm from "./app/components/AddTaskForm";
 import TaskList from "./app/components/TaskList";
 import colors from "./app/styles/colors";
+import { buttonStyles } from "./app/styles/button";
+import { defaultShadows } from "./app/styles/shadows";
 
 const { useRealm, useQuery } = TaskContext;
 
@@ -40,7 +42,7 @@ type AppPropsSyncEnabled = AppPropsBase & {
   onLogin?: () => void;
   onLogout?: () => void;
   currentUserId: string;
-  currentUserName: string;
+  currentUserName?: string;
 };
 
 type AppProps = AppPropsSyncDisabled | AppPropsSyncEnabled;
@@ -120,9 +122,16 @@ export function App(props: AppProps) {
 
       {props.syncEnabled && (
         <>
-          {props.onLogin && <Button title="Login" onPress={props.onLogin} />}
-          {props.onLogout && <Button title="Logout" onPress={props.onLogout} />}
-          {props.currentUserName && <Text style={styles.username}>Logged in as {props.currentUserName}</Text>}
+          {props.onLogin && (
+            <Pressable style={styles.authButton} onPress={props.onLogin}>
+              <Text style={styles.authButtonText}>Login</Text>
+            </Pressable>
+          )}
+          {props.onLogout && (
+            <Pressable style={styles.authButton} onPress={props.onLogout}>
+              <Text style={styles.authButtonText}>Logout {props.currentUserName}</Text>
+            </Pressable>
+          )}
         </>
       )}
     </SafeAreaView>
@@ -139,8 +148,17 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingHorizontal: 20,
   },
-  username: {
-    color: colors.gray,
-    textAlign: "center",
+  authButton: {
+    ...buttonStyles.button,
+    ...defaultShadows,
+    backgroundColor: colors.purpleDark,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    marginRight: 20,
+    marginTop: 20,
+  },
+  authButtonText: {
+    color: colors.white,
+    padding: 10,
   },
 });

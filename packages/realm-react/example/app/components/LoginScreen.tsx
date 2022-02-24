@@ -16,9 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, Button } from "react-native";
+import { View, Text, StyleSheet, TextInput, Button, Pressable } from "react-native";
 import { AuthState } from "../../AppWrapper";
 import colors from "../styles/colors";
+import { defaultShadows } from "../styles/shadows";
+import { buttonStyles } from "../styles/button";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => void;
@@ -30,10 +32,17 @@ export default function LoginScreen(props: LoginScreenProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const handleLogin = () => {
+    props.onLogin(email, password);
+  };
+
+  const handleRegister = () => {
+    props.onRegister(email, password);
+  };
+
   return (
     <View style={styles.content}>
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
           value={email}
@@ -42,10 +51,10 @@ export default function LoginScreen(props: LoginScreenProps) {
           textContentType="emailAddress"
           autoCapitalize="none"
           autoCorrect={false}
+          placeholder="Email"
         />
       </View>
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Password</Text>
         <TextInput
           style={styles.input}
           value={password}
@@ -53,24 +62,34 @@ export default function LoginScreen(props: LoginScreenProps) {
           secureTextEntry
           autoCompleteType="password"
           textContentType="password"
+          placeholder="Password"
         />
       </View>
 
       {props.authState === AuthState.LoginError && (
-        <Text style={[styles.status, styles.error]}>There was an error logging in, please try again</Text>
+        <Text style={[styles.error]}>There was an error logging in, please try again</Text>
       )}
       {props.authState === AuthState.RegisterError && (
-        <Text style={[styles.status, styles.error]}>There was an error registering, please try again</Text>
+        <Text style={[styles.error]}>There was an error registering, please try again</Text>
       )}
 
-      {props.authState === AuthState.Loading ? (
-        <Text>Please wait...</Text>
-      ) : (
-        <>
-          <Button title="Login" onPress={() => props.onLogin(email, password)} />
-          <Button title="Register" onPress={() => props.onRegister(email, password)} />
-        </>
-      )}
+      <View style={styles.buttons}>
+        <Pressable
+          onPress={handleLogin}
+          style={[styles.button, props.authState === AuthState.Loading && styles.buttonDisabled]}
+          disabled={props.authState === AuthState.Loading}
+        >
+          <Text style={buttonStyles.text}>Login</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={handleRegister}
+          style={[styles.button, props.authState === AuthState.Loading && styles.buttonDisabled, styles.registerButton]}
+          disabled={props.authState === AuthState.Loading}
+        >
+          <Text style={buttonStyles.text}>Register</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -80,17 +99,43 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: colors.darkBlue,
   },
 
   inputContainer: {
     padding: 10,
+    alignSelf: "stretch",
+    marginHorizontal: 10,
   },
 
-  label: { textAlign: "center", marginBottom: 10 },
+  error: { textAlign: "center", marginTop: 10, marginBottom: 10, fontSize: 14, color: colors.white },
 
-  status: { textAlign: "center", margin: 10 },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.gray,
+    padding: 10,
+    height: 50,
+    marginVertical: 8,
+    backgroundColor: colors.white,
+    borderRadius: 5,
+    ...defaultShadows,
+  },
 
-  error: { color: "#f00" },
+  buttons: {
+    marginTop: 16,
+    flexDirection: "row",
+  },
 
-  input: { borderWidth: 1, borderColor: colors.gray, padding: 10, width: 250 },
+  button: {
+    ...buttonStyles.button,
+    ...defaultShadows,
+  },
+
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+
+  registerButton: {
+    backgroundColor: colors.purpleDark,
+  },
 });

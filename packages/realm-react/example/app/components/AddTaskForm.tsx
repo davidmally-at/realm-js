@@ -18,6 +18,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, Platform, StyleSheet } from "react-native";
 
+import { buttonStyles } from "../styles/button";
 import colors from "../styles/colors";
 
 interface AddTaskFormProps {
@@ -78,19 +79,14 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   submit: {
-    height: "100%",
+    ...buttonStyles.button,
     width: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 20,
-    borderRadius: 5,
-    backgroundColor: colors.purple,
+    height: "100%",
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   icon: {
-    color: colors.white,
-    textAlign: "center",
-    fontSize: 17,
-    fontWeight: "bold",
+    ...buttonStyles.text,
   },
 });
 

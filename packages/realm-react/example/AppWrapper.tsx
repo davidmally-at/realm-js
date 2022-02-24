@@ -23,6 +23,8 @@ import TaskContext from "./app/models/Task";
 import { App } from "./App";
 import LoginScreen from "./app/components/LoginScreen";
 import { SYNC_CONFIG } from "./app/config/sync";
+import { StyleSheet, View } from "react-native";
+import colors from "./app/styles/colors";
 
 export enum AuthState {
   None,
@@ -31,7 +33,7 @@ export enum AuthState {
   RegisterError,
 }
 
-export default function AppWrapper() {
+function AppWrapperImpl() {
   const { RealmProvider } = TaskContext;
 
   // If sync is disabled, create the app without any sync functionality
@@ -110,7 +112,7 @@ export default function AppWrapper() {
   }, [user]);
 
   // Return null while we wait for anonymous login to complete
-  if (!user && SYNC_CONFIG.anonymousAuthEnabled) return null;
+  if ((!user || !app.currentUser) && SYNC_CONFIG.anonymousAuthEnabled) return null;
 
   // If we are not logged in, or the user has pressed "Login" as an anonymous user,
   // show the login screen
@@ -131,3 +133,20 @@ export default function AppWrapper() {
     </RealmProvider>
   );
 }
+
+export default function AppWrapper() {
+  // Wrap the app with a background colour to prevent a flash of white while sync is
+  // initialising causing RealmProvider to return null
+  return (
+    <View style={styles.screen}>
+      <AppWrapperImpl />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.darkBlue,
+  },
+});
