@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, { useCallback, useMemo } from "react";
-import { SafeAreaView, View, StyleSheet, Button, Text, Pressable } from "react-native";
+import { SafeAreaView, View, StyleSheet, Text, Pressable } from "react-native";
 
 import TaskContext, { Task } from "./app/models/Task";
 import IntroText from "./app/components/IntroText";
@@ -53,6 +53,8 @@ export function App(props: AppProps) {
 
   const tasks = useMemo(() => result.sorted("createdAt"), [result]);
 
+  const currentUserId = props.syncEnabled ? props.currentUserId : undefined;
+
   const handleAddTask = useCallback(
     (description: string): void => {
       if (!description) {
@@ -67,10 +69,10 @@ export function App(props: AppProps) {
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        realm.create("Task", Task.generate(props.syncEnabled ? props.currentUserId : undefined, description));
+        realm.create("Task", Task.generate(currentUserId, description));
       });
     },
-    [realm],
+    [realm, currentUserId],
   );
 
   const handleToggleTaskStatus = useCallback(

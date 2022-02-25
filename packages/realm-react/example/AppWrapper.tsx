@@ -33,17 +33,19 @@ export enum AuthState {
   RegisterError,
 }
 
-function AppWrapperImpl() {
+function AppWrapperNonSync() {
   const { RealmProvider } = TaskContext;
 
   // If sync is disabled, setup the app without any sync functionality and return early
-  if (!SYNC_CONFIG.enabled) {
-    return (
-      <RealmProvider>
-        <App syncEnabled={false} />
-      </RealmProvider>
-    );
-  }
+  return (
+    <RealmProvider>
+      <App syncEnabled={false} />
+    </RealmProvider>
+  );
+}
+
+function AppWrapperSync() {
+  const { RealmProvider } = TaskContext;
 
   // Set up the Realm app
   const app = useRef(new Realm.App({ id: SYNC_CONFIG.realmAppId })).current;
@@ -117,7 +119,7 @@ function AppWrapperImpl() {
         throw e;
       }
     })();
-  }, [user]);
+  }, [user, app]);
 
   // Return null if we are waiting for anonymous login to complete
   if ((!user || !app.currentUser) && SYNC_CONFIG.anonymousAuthEnabled) return null;
@@ -145,11 +147,7 @@ function AppWrapperImpl() {
 export default function AppWrapper() {
   // Wrap the app with a background colour to prevent a flash of white while sync is
   // initialising causing RealmProvider to return null
-  return (
-    <View style={styles.screen}>
-      <AppWrapperImpl />
-    </View>
-  );
+  return <View style={styles.screen}>{SYNC_CONFIG.enabled ? <AppWrapperSync /> : <AppWrapperNonSync />}</View>;
 }
 
 const styles = StyleSheet.create({

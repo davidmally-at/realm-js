@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import React, { memo } from "react";
-import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 
 import { shadows } from "../styles/shadows";
 import colors from "../styles/colors";

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, Button, Pressable } from "react-native";
+import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
 import { AuthState } from "../../AppWrapper";
 import colors from "../styles/colors";
 import { shadows } from "../styles/shadows";
